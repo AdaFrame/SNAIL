@@ -177,7 +177,7 @@ app.main = {
     const fraction1 = c1.text.split("/");
     const fraction2 = c2.text.split("/");
 
-    const newFraction =${fraction1[0] + fraction2[0]}/${fraction1[1] + fraction2[1]}c2.text = newFraction;
+    const newFraction = `${fraction1[0] + fraction2[0]}/${fraction1[1] + fraction2[1]}c2.text`;
     c2.fraction = parseInt(newFraction);
   },
 }; // end app.main
