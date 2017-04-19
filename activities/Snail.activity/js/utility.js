@@ -28,6 +28,11 @@ function clamp(val, min, max){
 	return Math.max(min, Math.min(max, val));
 }
 
+function fractionToDecimal(fraction) {
+  const splitText = fraction.split('/');
+  return parseInt(splitText[0]) / parseInt(splitText[1]);
+}
+
 function getMouse(canvas, e){
     var rect = canvas.getBoundingClientRect();
 

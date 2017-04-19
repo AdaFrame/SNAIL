@@ -26,7 +26,7 @@ app.main = {
   colors: ["253,91,120","255,96,55","255,153,102","255,255,102","102,255,102","80,191,230","255,110,255","238,52,210"],
 
   circles: [],
-  circlesClicked: [],
+  selectedCircleIndex: -1,
 
   // Circle fake enumeration
   CIRCLE_STATE: {
@@ -39,7 +39,6 @@ app.main = {
     // Initialize properties
     this.canvas = document.querySelector('#mainCanvas');
     this.ctx = this.canvas.getContext('2d');
-    this.canvas.onmousedown = this.doMousedown;
 
     // set the width and height
     this.canvas.width = 500;
@@ -48,14 +47,17 @@ app.main = {
     // make circles yo
     this.makeCircles(7,5);
 
+    // set up events
+    this.canvas.onmousedown = this.doMouseDown.bind(this);
+
     // start the game loop
     this.update();
   },
 
   // main update method
   update: function() {
-      //clear
-      this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+    //clear
+    this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
     // 1) LOOP
 		// schedule a call to update()
 	 	this.animationId = requestAnimationFrame(this.update.bind(this));
@@ -111,10 +113,10 @@ app.main = {
         const state = this.CIRCLE_STATE.DEFAULT;
 
         const text = this.fractions[Math.floor((Math.random() * this.fractions.length))];
-        const fraction = parseInt(text);
+
+        const fraction = fractionToDecimal(text);
 
         // Random Color
-        console.log(Math.floor((Math.random() * this.colors.length)));
         const c = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
 
         this.circles.push(new this.Circle(x, y, radius, state, fraction, text, c));
@@ -123,61 +125,53 @@ app.main = {
   },
 
   calculateDeltaTime: function(){
-		var now,fps;
+		let now,fps;
 		now = performance.now();
 		fps = 1000 / (now - this.lastTime);
 		fps = clamp(fps, 12, 60);
 		this.lastTime = now;
 		return 1/fps;
   },
-    checkCircleClicked: function(mouse){
-        // looping through circle array backwards
-        for(var i = this.circles.length -1; i>=0; i--){
-            var c = this.circles[i];
-            if (pointInsideCircle(mouse.x, mouse.y, c)){
-                //do something with circle here
-                if(circlesClicked.length == 2) {
-                    //now do we add them or go boom?
-                    if(circlesClicked[0].fraction==c.fraction){
-                        //delete them and add points?
 
-                        var index = circles.indexOf(circlesClicked[0]);
-                        c.state=this.CIRCLE_STATE['EXPLODED'];
-                        circlesClicked[0].state = this.CIRCLE_STATE['EXPLODED'];
+  checkCircleClicked: function(mouse){
+    // looping through circle array backwards
+    for (let i = this.circles.length -1; i>=0; --i) {
+      let c1 = this.circles[i];
+      if (pointInsideCircle(mouse.x, mouse.y, c1)) {
+        // We selected the second circle
+        if (this.selectedCircleIndex != -1) {
+          let c2 = this.circles[this.selectedCircleIndex];
 
-                        this.circles[i]=c;
-                        this.circles[index]=circlesClicked[0];
+          if (c1.fraction == c2.fraction) {
+            // circles are the same delete for now
+            c1.state = this.CIRCLE_STATE.EXPLODED;
+            c2.state = this.CIRCLE_STATE.EXPLODED;
+          }
+          else {
+            // Add them
+            this.addCircles(c1, c2);
+          }
 
-                        circlesClicked = [];
-                    }else{
-                        //add 1st circle into the 2nd one.
-                        this.addCircles(circlesClicked[0],c);
-
-                        //get rid of first one
-                        var index = circles.indexOf(circlesClicked[0]);
-                        circlesClicked[0].state = this.CIRCLE_STATE['EXPLODED'];
-                        this.circles[index]=circlesClicked[0];
-
-                        circlesClicked=[];
-                    }
-                }else{
-                    //perhaps create some highlight around the circle to show it is selected?
-                    circlesClicked.push(c);
-                }
-                break; // we want to do only one circle
-            }
+          this.selectedCircleIndex = -1;
         }
-    },
+        else {
+          this.selectedCircleIndex = i;
+        }
+      }
+    }
+  },
   doMouseDown: function(e){
-      var mouse = getMouse(e);
+      const mouse = getMouse(this.canvas, e);
       // have to call through app.main because this = canvas
-      app.main.checkCircleClicked(mouse);
+      this.checkCircleClicked(mouse);
    },
   addCircles: function(c1, c2) {
     const fraction1 = c1.text.split("/");
     const fraction2 = c2.text.split("/");
 
-    const newFraction = `${fraction1[0] + fraction2[0]}/${fraction1[1] + fraction2[1]}c2.text`;
-    c2.fraction = parseInt(newFraction);
+    const newFraction = `${fraction1[0] + fraction2[0]}/${fraction1[1] + fraction2[1]}`;
+    console.log(newFraction);
+    c2.text = newFraction;
+    c2.fraction = fractionToDecimal(newFraction);
   },
 }; // end app.main
