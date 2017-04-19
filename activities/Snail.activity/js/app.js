@@ -26,6 +26,7 @@ app.main = {
   colors: ["253,91,120","255,96,55","255,153,102","255,255,102","102,255,102","80,191,230","255,110,255","238,52,210"],
 
   circles: [],
+  circlesClicked: [],
 
   // Circle fake enumeration
   CIRCLE_STATE: {
@@ -38,6 +39,7 @@ app.main = {
     // Initialize properties
     this.canvas = document.querySelector('#mainCanvas');
     this.ctx = this.canvas.getContext('2d');
+    this.canvas.onmousedown = this.doMousedown;
 
     // set the width and height
     this.canvas.width = 500;
@@ -52,6 +54,8 @@ app.main = {
 
   // main update method
   update: function() {
+      //clear
+      this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
     // 1) LOOP
 		// schedule a call to update()
 	 	this.animationId = requestAnimationFrame(this.update.bind(this));
@@ -126,4 +130,48 @@ app.main = {
 		this.lastTime = now;
 		return 1/fps;
   },
+    checkCircleClicked: function(mouse){
+        // looping through circle array backwards
+        for(var i = this.circles.length -1; i>=0; i--){
+            var c = this.circles[i];
+            if (pointInsideCircle(mouse.x, mouse.y, c)){
+                //do something with circle here
+                if(circlesClicked.length == 2) {
+                    //now do we add them or go boom?
+                    if(circlesClicked[0].fraction==c.fraction){
+                        //delete them and add points?
+
+                        var index = circles.indexOf(circlesClicked[0]);
+                        c.state=this.CIRCLE_STATE['EXPLODED'];
+                        circlesClicked[0].state = this.CIRCLE_STATE['EXPLODED'];
+
+                        this.circles[i]=c;
+                        this.circles[index]=circlesClicked[0];
+
+                        circlesClicked = [];
+                    }else{
+                        //add 1st circle into the 2nd one.
+                        this.addCircles(circlesClicked[0],c);
+
+                        //get rid of first one
+                        var index = circles.indexOf(circlesClicked[0]);
+                        circlesClicked[0].state = this.CIRCLE_STATE['EXPLODED'];
+                        this.circles[index]=circlesClicked[0];
+
+                        circlesClicked=[];
+                    }
+                }else{
+                    //perhaps create some highlight around the circle to show it is selected?
+                    circlesClicked.push(c);
+                }
+                break; // we want to do only one circle
+            }
+        }
+    },
+  doMouseDown: function(e){
+      var mouse = getMouse(e);
+      // have to call through app.main because this = canvas
+      app.main.checkCircleClicked(mouse);
+   },
+
 }; // end app.main

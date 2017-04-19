@@ -27,3 +27,17 @@ constrained between min and max (inclusive)
 function clamp(val, min, max){
 	return Math.max(min, Math.min(max, val));
 }
+
+function getMouse(canvas, e){
+    var rect = canvas.getBoundingClientRect();
+
+    let mouse = {};
+    mouse.x = e.pageX - rect.left;
+    mouse.y = e.pageY - rect.top;
+    return mouse;
+}
+function pointInsideCircle(x, y, I) {
+    var dx = x - I.x;
+    var dy = y - I.y;
+    return dx * dx + dy * dy <= I.radius * I.radius;
+}
