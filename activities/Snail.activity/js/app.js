@@ -104,8 +104,11 @@ app.main = {
         const state = this.CIRCLE_STATE.DEFAULT;
 
         //TODO Hard coded for now but we should generate these
-        const fraction = .5;
-        const text = "1/2";
+        //const fraction = .5;
+        //const text = "1/2";
+	const max = 10;
+	const fraction = ((Math.floor((Math.random() * max)))+1);
+	const text = ("1/" + fraction);
 
         const c = "rgb(255,0,0)";
 
