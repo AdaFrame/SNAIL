@@ -19,6 +19,12 @@ app.main = {
   canvas: undefined,
   ctx: undefined,
 
+  fractions: ['1/10', '1/9', '1/8', '1/7', '1/6','1/5','1/4','1/3','1/2'],
+
+  // original 8 fluorescent crayons: https://en.wikipedia.org/wiki/List_of_Crayola_crayon_colors#Fluorescent_crayons
+	//  "Ultra Red", "Ultra Orange", "Ultra Yellow","Chartreuse","Ultra Green","Ultra Blue","Ultra Pink","Hot Magenta"
+  colors: ["253,91,120","255,96,55","255,153,102","255,255,102","102,255,102","80,191,230","255,110,255","238,52,210"],
+
   circles: [],
 
   // Circle fake enumeration
@@ -39,7 +45,6 @@ app.main = {
 
     // make circles yo
     this.makeCircles(7,5);
-    console.dir(this.circles);
 
     // start the game loop
     this.update();
@@ -50,8 +55,6 @@ app.main = {
     // 1) LOOP
 		// schedule a call to update()
 	 	this.animationId = requestAnimationFrame(this.update.bind(this));
-
-    console.log('here');
 
 	 	// 2) PAUSED?
 	 	// if so, bail out of loop
@@ -100,14 +103,15 @@ app.main = {
 
         // Calculate y position
         const y = yOffset + (radius * 2 * i);
-        
+
         const state = this.CIRCLE_STATE.DEFAULT;
 
-        //TODO Hard coded for now but we should generate these
-        const fraction = .5;
-        const text = "1/2";
+        const text = this.fractions[Math.floor((Math.random() * this.fractions.length))];
+        const fraction = parseInt(text);
 
-        const c = "rgb(255,0,0)";
+        // Random Color
+        console.log(Math.floor((Math.random() * this.colors.length)));
+        const c = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
 
         this.circles.push(new this.Circle(x, y, radius, state, fraction, text, c));
       }
