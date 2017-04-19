@@ -107,8 +107,9 @@ app.main = {
         //const fraction = .5;
         //const text = "1/2";
 	const max = 9;
-	const fraction = ((Math.floor((Math.random() * max)))+2);
-	const text = ("1/" + fraction);
+	const denom = ((Math.floor(Math.random() * max))+2);
+	const fraction = (1 / denom);
+	const text = ("1/" + denom);
 
         const c = "rgb(255,0,0)";
 
