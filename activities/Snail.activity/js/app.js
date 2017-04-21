@@ -26,7 +26,7 @@ app.main = {
   colors: ["253,91,120","255,96,55","255,153,102","255,255,102","102,255,102","80,191,230","255,110,255","238,52,210"],
 
   circles: [],
-  selectedCircleIndex: -1,
+  selectedCircle: null,
 
   // Circle fake enumeration
   CIRCLE_STATE: {
@@ -88,9 +88,11 @@ app.main = {
 
   drawCircles: function(ctx) {
 		for (let i = 0; i < this.circles.length; ++i) {
-			const c = this.circles[i];
-			if (c.state == this.CIRCLE_STATE.EXPLODED) continue;
-			c.draw(ctx);
+      for (let k = 0; k < this.circles[i].length; ++k) {
+        const c = this.circles[i][k];
+        if (c.state == this.CIRCLE_STATE.EXPLODED) continue;
+  			c.draw(ctx);
+      }
 		}
 	},
 
@@ -102,13 +104,21 @@ app.main = {
     const totalHeightNeeded = numRows * 2 * radius; // number of rows * diameter
     const yOffset = this.canvas.height / 2 - (totalHeightNeeded / 2) + radius;
 
-    for (let i = 0; i < numRows; ++i) {
-      for (let k = 0; k < numPerRow; ++k) {
+    for (let i = 0; i < numPerRow; ++i) {
+      let columns = [];
+
+      for (let k = numRows - 1; k >= 0; --k) {
+        //                            X X X X X X X
+        //                            X X X X X X X
+        //                            X X X X X X X
+        //                            X X X X X X X
+        // this is circles[0][0] ---> X X X X X X X
+
         // Calculate x position
-        const x = xOffset + (radius * 2 * k);
+        const x = xOffset + (radius * 2 * i);
 
         // Calculate y position
-        const y = yOffset + (radius * 2 * i);
+        const y = yOffset + (radius * 2 * k);
 
         const state = this.CIRCLE_STATE.DEFAULT;
 
@@ -119,8 +129,11 @@ app.main = {
         // Random Color
         const c = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
 
-        this.circles.push(new this.Circle(x, y, radius, state, fraction, text, c));
+        columns.push(new this.Circle(x, y, radius, state, fraction, text, c));
       }
+
+      this.circles.push(columns);
+      columns = [];
     }
   },
 
@@ -135,27 +148,29 @@ app.main = {
 
   checkCircleClicked: function(mouse){
     // looping through circle array backwards
-    for (let i = this.circles.length -1; i>=0; --i) {
-      let c1 = this.circles[i];
-      if (pointInsideCircle(mouse.x, mouse.y, c1)) {
-        // We selected the second circle
-        if (this.selectedCircleIndex != -1) {
-          let c2 = this.circles[this.selectedCircleIndex];
+    for (let i = this.circles.length - 1; i >= 0; --i) {
+      for (let k = this.circles[i].length - 1; k >= 0; --k) {
+        let c1 = this.circles[i][k];
+        if (pointInsideCircle(mouse.x, mouse.y, c1)) {
+          // We selected the second circle
+          if (this.selectedCircle) {
+            let c2 = this.selectedCircle;
 
-          if (c1.fraction == c2.fraction) {
-            // circles are the same delete for now
-            c1.state = this.CIRCLE_STATE.EXPLODED;
-            c2.state = this.CIRCLE_STATE.EXPLODED;
+            if (c1.fraction == c2.fraction) {
+              // circles are the same delete for now
+              c1.state = this.CIRCLE_STATE.EXPLODED;
+              c2.state = this.CIRCLE_STATE.EXPLODED;
+            }
+            else {
+              // Add them
+              this.addCircles(c1, c2);
+            }
+
+            this.selectedCircle = null;
           }
           else {
-            // Add them
-            this.addCircles(c1, c2);
+            this.selectedCircle = c1;
           }
-
-          this.selectedCircleIndex = -1;
-        }
-        else {
-          this.selectedCircleIndex = i;
         }
       }
     }
