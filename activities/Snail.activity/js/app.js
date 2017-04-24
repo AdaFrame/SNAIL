@@ -70,6 +70,7 @@ app.main = {
     this.dt = this.calculateDeltaTime();
 
     // 4) CIRCLES
+    this.updateCircles()
     this.drawCircles(this.ctx);
   },
 
@@ -96,6 +97,23 @@ app.main = {
 		}
 	},
 
+  updateCircles: function() {
+    for (let i = 0; i < this.circles.length; ++i) {
+      for (let k = 0; k < this.circles[i].length; ++k) {
+        // check if exploded
+        if (this.circles[i][k].state == this.CIRCLE_STATE.EXPLODED) {
+          if (i + 1 == this.circles.length) {
+            // top row create circle
+          }
+          else {
+            // find if there are any circles above it
+            this.circles[i][k] = this.circles[i+1][k];
+          }
+        }
+      }
+    }
+  },
+
   makeCircles : function(numRows, numPerRow) {
     const radius = 20;
     const totalWidthNeeded = numPerRow * 2 * radius; // number of circles * diameter
@@ -115,19 +133,22 @@ app.main = {
         // this is circles[0][0] ---> X X X X X X X
 
         // Calculate x position
-        const x = xOffset + (radius * 2 * i);
+        let x = xOffset + (radius * 2 * i);
 
         // Calculate y position
-        const y = yOffset + (radius * 2 * k);
+        let y = yOffset + (radius * 2 * k);
 
-        const state = this.CIRCLE_STATE.DEFAULT;
+        let targetX = x; // Used for animation
+        let targetY = y;
 
-        const text = this.fractions[Math.floor((Math.random() * this.fractions.length))];
+        let state = this.CIRCLE_STATE.DEFAULT;
 
-        const fraction = fractionToDecimal(text);
+        let text = this.fractions[Math.floor((Math.random() * this.fractions.length))];
+
+        let fraction = fractionToDecimal(text);
 
         // Random Color
-        const c = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
+        let c = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
 
         columns.push(new this.Circle(x, y, radius, state, fraction, text, c));
       }
@@ -194,7 +215,7 @@ app.main = {
     c2.fraction = fractionToDecimal(newFraction);
 
     if (c2.fraction >= 1) c2.state = this.CIRCLE_STATE.EXPLODED;
-    
+
     c1.state = this.CIRCLE_STATE.EXPLODED
   },
 }; // end app.main
