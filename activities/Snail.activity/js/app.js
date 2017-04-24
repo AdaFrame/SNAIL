@@ -150,26 +150,26 @@ app.main = {
     // looping through circle array backwards
     for (let i = this.circles.length - 1; i >= 0; --i) {
       for (let k = this.circles[i].length - 1; k >= 0; --k) {
-        let c1 = this.circles[i][k];
-        if (pointInsideCircle(mouse.x, mouse.y, c1)) {
+        let c = this.circles[i][k];
+        if (pointInsideCircle(mouse.x, mouse.y, c)) {
           // We selected the second circle
           if (this.selectedCircle) {
-            let c2 = this.selectedCircle;
+            let c1 = this.selectedCircle;
 
-            if (c1.fraction == c2.fraction) {
+            if (c.fraction == c1.fraction) {
               // circles are the same delete for now
+              c.state = this.CIRCLE_STATE.EXPLODED;
               c1.state = this.CIRCLE_STATE.EXPLODED;
-              c2.state = this.CIRCLE_STATE.EXPLODED;
             }
             else {
               // Add them
-              this.addCircles(c1, c2);
+              this.addCircles(c1, c);
             }
 
             this.selectedCircle = null;
           }
           else {
-            this.selectedCircle = c1;
+            this.selectedCircle = c;
           }
         }
       }
@@ -184,9 +184,17 @@ app.main = {
     const fraction1 = c1.text.split("/");
     const fraction2 = c2.text.split("/");
 
-    const newFraction = `${fraction1[0] + fraction2[0]}/${fraction1[1] + fraction2[1]}`;
-    console.log(newFraction);
+    const numerator = parseInt(fraction1[0]) * parseInt(fraction2[1]) +
+                        parseInt(fraction1[1]) * parseInt(fraction2[0]);
+    const denominator = parseInt(fraction1[1]) * parseInt(fraction2[1]);
+
+    const newFraction = reduce(numerator, denominator);
+
     c2.text = newFraction;
     c2.fraction = fractionToDecimal(newFraction);
+
+    if (c2.fraction >= 1) c2.state = this.CIRCLE_STATE.EXPLODED;
+    
+    c1.state = this.CIRCLE_STATE.EXPLODED
   },
 }; // end app.main

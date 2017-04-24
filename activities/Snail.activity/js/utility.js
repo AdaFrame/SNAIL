@@ -46,3 +46,37 @@ function pointInsideCircle(x, y, I) {
     var dy = y - I.y;
     return dx * dx + dy * dy <= I.radius * I.radius;
 }
+
+// http://courses.washington.edu/css161/zander/Code/Fraction.java
+function reduce(numerator, denominator) {
+  // find the larger of the numerator and denominator
+  let n = numerator, d = denominator, largest;
+  if (numerator < 0) {
+      n = -numerator;
+  }
+  console.log(n);
+  if (n > d) {
+      largest = n;
+  }
+  else {
+      largest = d;
+  }
+
+  // find the largest number that divide the numerator and
+  // denominator evenly
+  let gcd = 0;
+  for (let i = largest; i >= 2; i--) {
+      if (numerator % i == 0 && denominator % i == 0) {
+          gcd = i;
+          break;
+      }
+  }
+
+  // divide the largest common denominator out of numerator, denominator
+  if (gcd != 0) {
+      numerator /= gcd;
+      denominator /= gcd;
+  }
+
+  return numerator + '/' + denominator;
+}
