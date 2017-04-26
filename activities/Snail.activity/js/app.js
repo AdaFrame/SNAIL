@@ -106,8 +106,10 @@ app.main = {
             // top row create circle
           }
           else {
-            // find if there are any circles above it
-            this.circles[i][k] = this.circles[i+1][k];
+            // Shift all circles above down
+            // Check if EXPLODED and shift again if it is
+            // Keep account of numbers of times shifted and add that many circles
+            // go up to the next row            
           }
         }
       }
