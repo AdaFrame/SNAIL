@@ -24,7 +24,7 @@ app.main = {
   // original 8 fluorescent crayons: https://en.wikipedia.org/wiki/List_of_Crayola_crayon_colors#Fluorescent_crayons
 	//  "Ultra Red", "Ultra Orange", "Ultra Yellow","Chartreuse","Ultra Green","Ultra Blue","Ultra Pink","Hot Magenta"
   colors: ["253,91,120","255,96,55","255,153,102","255,255,102","102,255,102","80,191,230","255,110,255","238,52,210"],
-
+  textColors:[],
   circles: [],
   selectedCircle: null,
 
@@ -43,6 +43,14 @@ app.main = {
     // set the width and height
     this.canvas.width = 500;
     this.canvas.height = 800;
+
+    for(var x =0;x<this.colors.length;x++){
+        this.textColors[x]=invertColor(this.colors[x]);
+    }
+
+    console.log(this.colors);
+    console.log(this.textColors);
+
 
     // make circles yo
     this.makeCircles(7,5);
