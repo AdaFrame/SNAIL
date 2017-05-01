@@ -13,7 +13,8 @@ function draw(ctx) {
   ctx.textAlign = "center";
   ctx.font="12px Arial"
   ctx.fillText(this.text, this.x, this.y+6); // Add half the fontsize to center the text
-
+  ctx.strokeStyle = this.strokeColor;
+  ctx.stroke();
   ctx.restore();
 }
 

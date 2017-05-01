@@ -91,6 +91,7 @@ app.main = {
     this.state = state;
     this.fraction = fraction;
     this.text = text;
+    this.strokeColor = this.color;
 
     this.draw = draw.bind(this);
   },
@@ -183,6 +184,8 @@ app.main = {
       for (let k = this.circles[i].length - 1; k >= 0; --k) {
         let c = this.circles[i][k];
         if (pointInsideCircle(mouse.x, mouse.y, c)) {
+          var newTextColor = this.textColors[this.colors.indexOf(c.color)];
+          c.strokeColor = newTextColor;
           // We selected the second circle
           if (this.selectedCircle) {
             let c1 = this.selectedCircle;
