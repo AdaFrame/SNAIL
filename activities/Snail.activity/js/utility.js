@@ -17,6 +17,12 @@ function draw(ctx) {
   ctx.restore();
 }
 
+function move(changeY) {
+  console.log(changeY + this.y);
+  // this.y = this.y + changeY;
+  console.log(this.y);
+}
+
 /*
 Function Name: clamp(val, min, max)
 Author: Web - various sources
@@ -54,7 +60,6 @@ function reduce(numerator, denominator) {
   if (numerator < 0) {
       n = -numerator;
   }
-  console.log(n);
   if (n > d) {
       largest = n;
   }

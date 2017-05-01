@@ -28,6 +28,8 @@ app.main = {
   circles: [],
   selectedCircle: null,
 
+  GRAVITY: .01,
+
   // Circle fake enumeration
   CIRCLE_STATE: {
     DEFAULT: 0,
@@ -78,8 +80,7 @@ app.main = {
     this.dt = this.calculateDeltaTime();
 
     // 4) CIRCLES
-    this.updateCircles()
-    this.drawCircles(this.ctx);
+    this.updateCircles();
   },
 
   Circle : function(x, y, radius, state, fraction, text, color) {
@@ -92,7 +93,18 @@ app.main = {
     this.fraction = fraction;
     this.text = text;
 
+    this.move = move.bind(this);
     this.draw = draw.bind(this);
+  },
+
+  moveCircles : function(changeY) {
+    for (let i = 0; i < this.circles.length; ++i) {
+      for (let k = 0; k < this.circles[i].length; ++k) {
+        const c = this.circles[i][k];
+        if (c.state == this.CIRCLE_STATE.EXPLODED) continue;
+  			c.move(this.dt * this.GRAVITY);
+      }
+		}
   },
 
   drawCircles: function(ctx) {
@@ -106,22 +118,8 @@ app.main = {
 	},
 
   updateCircles: function() {
-    for (let i = 0; i < this.circles.length; ++i) {
-      for (let k = 0; k < this.circles[i].length; ++k) {
-        // check if exploded
-        if (this.circles[i][k].state == this.CIRCLE_STATE.EXPLODED) {
-          if (i + 1 == this.circles.length) {
-            // top row create circle
-          }
-          else {
-            // Shift all circles above down
-            // Check if EXPLODED and shift again if it is
-            // Keep account of numbers of times shifted and add that many circles
-            // go up to the next row            
-          }
-        }
-      }
-    }
+    this.moveCircles();
+    this.drawCircles(this.ctx);
   },
 
   makeCircles : function(numRows, numPerRow) {
