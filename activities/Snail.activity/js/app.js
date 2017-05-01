@@ -152,7 +152,7 @@ app.main = {
 
         // Random Color
         let color = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]} )`;
-	let backColor = `rgba(${this.colors[Math.floor((Math.random() * this.colors.lenth))]}, 1)`;
+	let backColor = `rgba(${this.colors[Math.floor((Math.random() * this.colors.lenth))]}, '0.5')`;
         columns.push(new this.Circle(x, y, radius, state, fraction, text, backColor, color));
       }
 
