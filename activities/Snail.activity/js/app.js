@@ -74,11 +74,12 @@ app.main = {
     this.drawCircles(this.ctx);
   },
 
-  Circle : function(x, y, radius, state, fraction, text, color) {
+  Circle : function(x, y, radius, state, fraction, text, backColor, color) {
     this.x = x;
     this.y = y;
 
     this.radius = radius;
+    this.backColor = backColor;
     this.color = color;
     this.state = state;
     this.fraction = fraction;
@@ -150,9 +151,9 @@ app.main = {
         let fraction = fractionToDecimal(text);
 
         // Random Color
-        let c = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
-
-        columns.push(new this.Circle(x, y, radius, state, fraction, text, c));
+        let color = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]} )`;
+	let backColor = `rgba(${this.colors[Math.floor((Math.random() * this.colors.lenth))]}, 1)`;
+        columns.push(new this.Circle(x, y, radius, state, fraction, text, backColor, color));
       }
 
       this.circles.push(columns);

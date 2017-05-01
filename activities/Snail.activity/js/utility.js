@@ -1,19 +1,25 @@
 function draw(ctx) {
   ctx.save();
 
-  // Create Red circle
-  ctx.fillStyle = this.color;
+  // Create base circle
+  ctx.fillStyle = this.backColor;
   ctx.beginPath();
   ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
   ctx.fill();
-
+	
+  // Create solid circle
+  ctx.fillStyle = this.color;
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, this.radius, 0, Math.Pi + (this.fraction * Math.PI) /2 );
+  ctx.fill();
+/*
   // Draw the text on the circle
   // TODO There should be an inverse function so text is readable no matter the color
   ctx.fillStyle = "black";
   ctx.textAlign = "center";
   ctx.font="12px Arial"
   ctx.fillText(this.text, this.x, this.y+6); // Add half the fontsize to center the text
-
+*/
   ctx.restore();
 }
 
