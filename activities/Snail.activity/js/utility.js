@@ -4,7 +4,7 @@ function draw(ctx) {
   // Create Red circle
   ctx.fillStyle = this.color;
   ctx.beginPath();
-  ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
+  ctx.arc(parseInt(this.x), parseInt(this.y), this.radius, 0, 2*Math.PI);
   ctx.fill();
 
   // Draw the text on the circle
@@ -12,15 +12,9 @@ function draw(ctx) {
   ctx.fillStyle = "black";
   ctx.textAlign = "center";
   ctx.font="12px Arial"
-  ctx.fillText(this.text, this.x, this.y+6); // Add half the fontsize to center the text
+  ctx.fillText(this.text, parseInt(this.x), parseInt(this.y)+6); // Add half the fontsize to center the text
 
   ctx.restore();
-}
-
-function move(changeY) {
-  console.log(changeY + this.y);
-  // this.y = this.y + changeY;
-  console.log(this.y);
 }
 
 /*

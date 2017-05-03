@@ -28,8 +28,6 @@ app.main = {
   circles: [],
   selectedCircle: null,
 
-  GRAVITY: .01,
-
   // Circle fake enumeration
   CIRCLE_STATE: {
     DEFAULT: 0,
@@ -49,10 +47,6 @@ app.main = {
     for(var x =0;x<this.colors.length;x++){
         this.textColors[x]=invertColor(this.colors[x]);
     }
-
-    console.log(this.colors);
-    console.log(this.textColors);
-
 
     // make circles yo
     this.makeCircles(7,5);
@@ -84,8 +78,19 @@ app.main = {
   },
 
   Circle : function(x, y, radius, state, fraction, text, color) {
+
+    this.move = function(dt) {
+      console.log(this.ySpeed);
+      console.log(this.ySpeed * this.speed * dt);
+      this.y += this.ySpeed * this.speed * dt;
+    };
+
     this.x = x;
     this.y = y;
+
+    this.speed = 80;
+    this.xSpeed = 20;
+    this.ySpeed = 80;
 
     this.radius = radius;
     this.color = color;
@@ -93,16 +98,18 @@ app.main = {
     this.fraction = fraction;
     this.text = text;
 
-    this.move = move.bind(this);
     this.draw = draw.bind(this);
   },
 
-  moveCircles : function(changeY) {
+  moveCircles : function(dt) {
     for (let i = 0; i < this.circles.length; ++i) {
       for (let k = 0; k < this.circles[i].length; ++k) {
         const c = this.circles[i][k];
         if (c.state == this.CIRCLE_STATE.EXPLODED) continue;
-  			c.move(this.dt * this.GRAVITY);
+  			c.move(dt);
+
+        // if circle is leaving screen
+        if (this.circleHitBottom(c)) c.y = this.canvas.height - this.radius;
       }
 		}
   },
@@ -118,17 +125,27 @@ app.main = {
 	},
 
   updateCircles: function() {
-    this.moveCircles();
+    this.moveCircles(this.dt);
     this.drawCircles(this.ctx);
+  },
+
+  circleHitBottom: function(c) {
+    if (c.y > this.canvas.height - c.radius) {
+      return true;
+    }
   },
 
   makeCircles : function(numRows, numPerRow) {
     const radius = 20;
-    const totalWidthNeeded = numPerRow * 2 * radius; // number of circles * diameter
-    const xOffset = this.canvas.width / 2 - (totalWidthNeeded / 2) + radius;
 
+    const totalWidthNeeded = numPerRow * 2 * radius; // number of circles * diameter
     const totalHeightNeeded = numRows * 2 * radius; // number of rows * diameter
-    const yOffset = this.canvas.height / 2 - (totalHeightNeeded / 2) + radius;
+
+    this.canvas.width = totalWidthNeeded;
+    this.canvas.height = totalHeightNeeded;
+
+    const xOffset = radius;
+    const yOffset = radius;
 
     for (let i = 0; i < numPerRow; ++i) {
       let columns = [];
