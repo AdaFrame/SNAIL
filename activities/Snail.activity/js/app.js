@@ -89,11 +89,17 @@ app.main = {
     for (let i = 0; i < this.circles.length; ++i) {
       for (let k = 0; k < this.circles[i].length; ++k) {
         const c = this.circles[i][k];
-        if (c.state == this.CIRCLE_STATE.EXPLODED) continue;
-  			c.move(dt);
-
-        // if circle is leaving screen
-        // if (this.circleHitBottom(c)) c.y = this.canvas.height - this.radius;
+        if (c.state == this.CIRCLE_STATE.EXPLODED) {
+            let j = k+1;
+            for (let j = k+1; j < this.circles[i].length - 1; j++) {
+              c.state = this.circles[i][j].state;
+              c.x = this.circles[i][j].x;
+              c.y = this.circles[i][j].y;
+              c.color = this.circles[i][j].color;
+              c.fraction = this.circles[i][j].fraction;
+              c.text = this.circles[i][j].text;
+            }
+        }
       }
 		}
   },
@@ -110,40 +116,8 @@ app.main = {
 
   updateCircles: function() {
     this.moveCircles(this.dt);
-    // this.checkForCollisions();
     this.drawCircles(this.ctx);
   },
-
-  circleHitBottom: function(c) {
-    if (c.y > this.canvas.height - c.radius) {
-      return true;
-    }
-  },
-
-  checkForCollisions: function(){
-		// check for collisions between circles
-    for (let i = 0; i < this.circles.length; ++i) {
-      for (let k = 0; k < this.circles[i].length; ++k) {
-				var c1 = this.circles[i][k];
-				// only check for collisions if c1 is exploding
-				if (c1.state === this.CIRCLE_STATE.DEFAULT) continue;
-        for (let j = 0; j < this.circles.length; ++j) {
-          for (let l = 0; l < this.circles[j].length; ++l) {
-  					var c2 = this.circles[j][l];
-  				// don't check for collisions if c2 is the same circle
-  					if (c1 === c2) continue;
-  				// don't check for collisions if c2 is already exploding
-  					if (c2.state != this.CIRCLE_STATE.DEFAULT ) continue;
-
-  					// Now you finally can check for a collision
-  					if(circlesIntersect(c1,c2) ){
-  						c2.xSpeed = c2.ySpeed = 0;
-  					}
-          }
-				}
-      }
-		} // end for
-	},
 
   makeCircles : function(numRows, numPerRow) {
     const radius = 20;
@@ -169,10 +143,9 @@ app.main = {
 
         let c = {};
 
-        let move = function(dt) {
-          console.log(this.ySpeed * this.speed * dt);
-          this.y += this.ySpeed * this.speed * dt;
-          console.log(this.y);
+        let move = function(oldCircle) {
+          this.y = oldCircle.y;
+          this.x = oldCircle.x;
         };
 
         let draw = function(ctx) {
@@ -195,10 +168,10 @@ app.main = {
         }
 
         // Calculate x position
-        c.x = xOffset + (radius * 2 * i);
+        c.x = parseInt(xOffset + (radius * 2 * i));
 
         // Calculate y position
-        c.y = yOffset + (radius * 2 * k);
+        c.y = parseInt(yOffset + (radius * 2 * k));
 
         c.radius = radius;
 
@@ -213,10 +186,6 @@ app.main = {
 
         // Random Color
         c.color = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
-
-        c.speed = 80;
-        c.xSpeed = 20;
-        c.ySpeed = 80;
 
         columns.push(c);
       }
@@ -264,6 +233,7 @@ app.main = {
       }
     }
   },
+
   doMouseDown: function(e){
       const mouse = getMouse(this.canvas, e);
       // have to call through app.main because this = canvas
