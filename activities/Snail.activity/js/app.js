@@ -35,6 +35,12 @@ app.main = {
     EXPLODED: 2,
   },
 
+  GAME_STATE: {
+    BEGIN: 0,
+    DEFAULT: 1,
+    END: 3,
+  },
+
   init : function() {
     // Initialize properties
     this.canvas = document.querySelector('#mainCanvas');
@@ -43,6 +49,8 @@ app.main = {
     // set the width and height
     this.canvas.width = 500;
     this.canvas.height = 800;
+
+    this.gameState = this.GAME_STATE.DEFAULT;
 
     for(var x =0;x<this.colors.length;x++){
         this.textColors[x]=invertColor(this.colors[x]);
@@ -77,30 +85,6 @@ app.main = {
     this.updateCircles();
   },
 
-  Circle : function(x, y, radius, state, fraction, text, color) {
-
-    this.move = function(dt) {
-      console.log(this.ySpeed);
-      console.log(this.ySpeed * this.speed * dt);
-      this.y += this.ySpeed * this.speed * dt;
-    };
-
-    this.x = x;
-    this.y = y;
-
-    this.speed = 80;
-    this.xSpeed = 20;
-    this.ySpeed = 80;
-
-    this.radius = radius;
-    this.color = color;
-    this.state = state;
-    this.fraction = fraction;
-    this.text = text;
-
-    this.draw = draw.bind(this);
-  },
-
   moveCircles : function(dt) {
     for (let i = 0; i < this.circles.length; ++i) {
       for (let k = 0; k < this.circles[i].length; ++k) {
@@ -109,7 +93,7 @@ app.main = {
   			c.move(dt);
 
         // if circle is leaving screen
-        if (this.circleHitBottom(c)) c.y = this.canvas.height - this.radius;
+        // if (this.circleHitBottom(c)) c.y = this.canvas.height - this.radius;
       }
 		}
   },
@@ -126,6 +110,7 @@ app.main = {
 
   updateCircles: function() {
     this.moveCircles(this.dt);
+    // this.checkForCollisions();
     this.drawCircles(this.ctx);
   },
 
@@ -134,6 +119,31 @@ app.main = {
       return true;
     }
   },
+
+  checkForCollisions: function(){
+		// check for collisions between circles
+    for (let i = 0; i < this.circles.length; ++i) {
+      for (let k = 0; k < this.circles[i].length; ++k) {
+				var c1 = this.circles[i][k];
+				// only check for collisions if c1 is exploding
+				if (c1.state === this.CIRCLE_STATE.DEFAULT) continue;
+        for (let j = 0; j < this.circles.length; ++j) {
+          for (let l = 0; l < this.circles[j].length; ++l) {
+  					var c2 = this.circles[j][l];
+  				// don't check for collisions if c2 is the same circle
+  					if (c1 === c2) continue;
+  				// don't check for collisions if c2 is already exploding
+  					if (c2.state != this.CIRCLE_STATE.DEFAULT ) continue;
+
+  					// Now you finally can check for a collision
+  					if(circlesIntersect(c1,c2) ){
+  						c2.xSpeed = c2.ySpeed = 0;
+  					}
+          }
+				}
+      }
+		} // end for
+	},
 
   makeCircles : function(numRows, numPerRow) {
     const radius = 20;
@@ -157,25 +167,58 @@ app.main = {
         //                            X X X X X X X
         // this is circles[0][0] ---> X X X X X X X
 
+        let c = {};
+
+        let move = function(dt) {
+          console.log(this.ySpeed * this.speed * dt);
+          this.y += this.ySpeed * this.speed * dt;
+          console.log(this.y);
+        };
+
+        let draw = function(ctx) {
+          ctx.save();
+
+          // Create Red circle
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
+          ctx.fill();
+
+          // Draw the text on the circle
+          // TODO There should be an inverse function so text is readable no matter the color
+          ctx.fillStyle = "black";
+          ctx.textAlign = "center";
+          ctx.font="12px Arial"
+          ctx.fillText(this.text, parseInt(this.x), parseInt(this.y)+6); // Add half the fontsize to center the text
+
+          ctx.restore();
+        }
+
         // Calculate x position
-        let x = xOffset + (radius * 2 * i);
+        c.x = xOffset + (radius * 2 * i);
 
         // Calculate y position
-        let y = yOffset + (radius * 2 * k);
+        c.y = yOffset + (radius * 2 * k);
 
-        let targetX = x; // Used for animation
-        let targetY = y;
+        c.radius = radius;
 
-        let state = this.CIRCLE_STATE.DEFAULT;
+        c.state = this.CIRCLE_STATE.DEFAULT;
 
-        let text = this.fractions[Math.floor((Math.random() * this.fractions.length))];
+        c.text = this.fractions[Math.floor((Math.random() * this.fractions.length))];
 
-        let fraction = fractionToDecimal(text);
+        c.fraction = fractionToDecimal(c.text);
+
+        c.move = move;
+        c.draw = draw;
 
         // Random Color
-        let c = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
+        c.color = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
 
-        columns.push(new this.Circle(x, y, radius, state, fraction, text, c));
+        c.speed = 80;
+        c.xSpeed = 20;
+        c.ySpeed = 80;
+
+        columns.push(c);
       }
 
       this.circles.push(columns);
@@ -226,6 +269,7 @@ app.main = {
       // have to call through app.main because this = canvas
       this.checkCircleClicked(mouse);
    },
+
   addCircles: function(c1, c2) {
     const fraction1 = c1.text.split("/");
     const fraction2 = c2.text.split("/");
