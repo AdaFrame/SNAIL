@@ -84,7 +84,7 @@ app.main = {
     // 4) CIRCLES
     this.updateCircles();
   },
-
+  
   moveCircles : function(dt) {
     for (let i = 0; i < this.circles.length; ++i) {
       for (let k = 0; k < this.circles[i].length; ++k) {
@@ -236,9 +236,9 @@ app.main = {
         c.draw = draw;
 
         // Random Color
-        c.color = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
-
-        columns.push(c);
+        let color = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]} )`;
+	      let backColor = `rgba(${this.colors[Math.floor((Math.random() * this.colors.lenth))]}, '0.5')`;
+        columns.push(new this.Circle(x, y, radius, state, fraction, text, backColor, color));
       }
 
       this.circles.push(columns);
