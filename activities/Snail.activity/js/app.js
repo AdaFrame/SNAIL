@@ -28,7 +28,7 @@ app.main = {
   circles: [],
   selectedCircle: null,
   moveCount: 0,
-  moveLimit: 5,
+  moveLimit: 30,
   gameState:undefined,
   score: 0,
 
@@ -47,7 +47,7 @@ app.main = {
   SCORE:{
     ADD: 30,
     EQUAL: 300,
-    EXPLODE: 1000
+    EXPLODE: 1000,
   },
 
   init : function() {
@@ -293,7 +293,7 @@ app.main = {
           if (this.selectedCircle) {
             let c1 = this.selectedCircle;
             if (c == c1) continue;
-            if (c.fraction == c1.fraction) {
+            if (c.fraction == c1.fraction && c.fraction != 0.5) {
               // circles are the same delete for now
               c.state = this.CIRCLE_STATE.EXPLODED;
               c1.state = this.CIRCLE_STATE.EXPLODED;
@@ -314,7 +314,6 @@ app.main = {
                     this.gameState=this.GAME_STATE.END;
                     document.getElementById("gamestatus").innerHTML="GAME OVER";
                 }
-                this.score+=this.SCORE.ADD;
                 updateMoves();
                 updateScore();
             }
@@ -377,6 +376,7 @@ app.main = {
     c2.fraction = fractionToDecimal(newFraction);
 
     if (c2.fraction >= 1) {
+      this.score+=this.SCORE.EXPLODE;
       for (let i = this.circles.length - 1; i >= 0; --i) {
         for (let k = this.circles[i].length - 1; k >= 0; --k) {
           if (c2 == this.circles[i][k]) this.explodeCircle(i,k);
@@ -385,6 +385,7 @@ app.main = {
     }
 
     else {
+      this.score+=this.SCORE.ADD;
       c1.state = this.CIRCLE_STATE.EXPLODED;
     }
   },
