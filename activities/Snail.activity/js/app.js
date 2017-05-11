@@ -27,6 +27,10 @@ app.main = {
   textColors:[],
   circles: [],
   selectedCircle: null,
+  moveCount: 0,
+  moveLimit: 5,
+  gameState:undefined,
+  score: 0,
 
   // Circle fake enumeration
   CIRCLE_STATE: {
@@ -39,6 +43,10 @@ app.main = {
     BEGIN: 0,
     DEFAULT: 1,
     END: 3,
+  },
+  SCORE:{
+    ADD: 30,
+    EXPLODE: 300,
   },
 
   init : function() {
@@ -61,6 +69,8 @@ app.main = {
 
     // set up events
     this.canvas.onmousedown = this.doMouseDown.bind(this);
+    updateMoves();
+    updateScore();
 
     // start the game loop
     this.update();
@@ -218,10 +228,26 @@ app.main = {
               // circles are the same delete for now
               c.state = this.CIRCLE_STATE.EXPLODED;
               c1.state = this.CIRCLE_STATE.EXPLODED;
+              this.moveCount++;
+              if(this.moveCount >=this.moveLimit){
+                this.gameState=this.GAME_STATE.END;
+                document.getElementById("gamestatus").innerHTML="GAME OVER";
+              }
+              this.score+=this.SCORE.EXPLODE;
+              updateMoves();
+              updateScore();
             }
             else {
               // Add them
               this.addCircles(c1, c);
+                this.moveCount++;
+                if(this.moveCount >=this.moveLimit){
+                    this.gameState=this.GAME_STATE.END;
+                    document.getElementById("gamestatus").innerHTML="GAME OVER";
+                }
+                this.score+=this.SCORE.ADD;
+                updateMoves();
+                updateScore();
             }
 
             this.selectedCircle = null;
@@ -235,9 +261,13 @@ app.main = {
   },
 
   doMouseDown: function(e){
-      const mouse = getMouse(this.canvas, e);
-      // have to call through app.main because this = canvas
-      this.checkCircleClicked(mouse);
+    if(this.gameState== this.GAME_STATE.END){
+      //do nothing
+    }else{
+        const mouse = getMouse(this.canvas, e);
+        // have to call through app.main because this = canvas
+        this.checkCircleClicked(mouse);
+    }
    },
 
   addCircles: function(c1, c2) {
