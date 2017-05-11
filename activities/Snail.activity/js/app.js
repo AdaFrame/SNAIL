@@ -90,18 +90,20 @@ app.main = {
       for (let k = 0; k < this.circles[i].length; ++k) {
         const c = this.circles[i][k];
         if (c.state == this.CIRCLE_STATE.EXPLODED) {
-            let j = k+1;
-            for (let j = k+1; j < this.circles[i].length - 1; j++) {
-              c.state = this.circles[i][j].state;
-              c.x = this.circles[i][j].x;
-              c.y = this.circles[i][j].y;
-              c.color = this.circles[i][j].color;
-              c.fraction = this.circles[i][j].fraction;
-              c.text = this.circles[i][j].text;
-            }
+          this.circles[i].splice(k,1);
+          for (let j = k; j < this.circles[i].length; j++) {
+            this.circles[i][j] = this.shiftCircle(this.circles[i][j]);
+          }
+          this.circles[i].push(this.makeCircle(c.x, 20));
         }
       }
 		}
+  },
+
+  shiftCircle : function(c) {
+    let newCircle = c;
+    newCircle.y = c.y + (c.radius*2);
+    return newCircle;
   },
 
   drawCircles: function(ctx) {
@@ -119,8 +121,57 @@ app.main = {
     this.drawCircles(this.ctx);
   },
 
-  makeCircles : function(numRows, numPerRow) {
-    const radius = 20;
+  makeCircle: function(x, y) {
+    let c = {};
+
+    let move = function(oldCircle) {
+      this.y = oldCircle.y;
+      this.x = oldCircle.x;
+    };
+
+    let draw = function(ctx) {
+      ctx.save();
+
+      // Create Red circle
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
+      ctx.fill();
+
+      // Draw the text on the circle
+      ctx.fillStyle = "black";
+      ctx.textAlign = "center";
+      ctx.font="12px Arial"
+      ctx.fillText(this.text, parseInt(this.x), parseInt(this.y)+6); // Add half the fontsize to center the text
+
+      ctx.restore();
+    }
+
+    // Calculate x position
+    c.x = x;
+
+    // Calculate y position
+    c.y = y;
+
+    c.radius = 25;
+
+    c.state = this.CIRCLE_STATE.DEFAULT;
+
+    c.text = this.fractions[Math.floor((Math.random() * this.fractions.length))];
+
+    c.fraction = fractionToDecimal(c.text);
+
+    c.move = move;
+    c.draw = draw;
+
+    // Random Color
+    c.color = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
+
+    return c;
+  },
+
+  makeCircles: function(numRows, numPerRow) {
+    const radius = 25;
 
     const totalWidthNeeded = numPerRow * 2 * radius; // number of circles * diameter
     const totalHeightNeeded = numRows * 2 * radius; // number of rows * diameter
