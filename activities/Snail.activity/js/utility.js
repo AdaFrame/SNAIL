@@ -178,3 +178,10 @@ function hexToComplimentary(hex){
     rgb = b | (g << 8) | (r << 16);
     return "#" + (0x1000000 | rgb).toString(16).substring(1);
 }
+function updateScore(){
+    document.getElementById("score").innerHTML="Score: " + app.main.score;
+}
+function updateMoves(){
+    document.getElementById("moves").innerHTML="Moves Left: " + (app.main.moveLimit - app.main.moveCount)
+}
+
