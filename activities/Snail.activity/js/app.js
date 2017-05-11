@@ -35,6 +35,12 @@ app.main = {
     EXPLODED: 2,
   },
 
+  GAME_STATE: {
+    BEGIN: 0,
+    DEFAULT: 1,
+    END: 3,
+  },
+
   init : function() {
     // Initialize properties
     this.canvas = document.querySelector('#mainCanvas');
@@ -44,13 +50,11 @@ app.main = {
     this.canvas.width = 500;
     this.canvas.height = 800;
 
+    this.gameState = this.GAME_STATE.DEFAULT;
+
     for(var x =0;x<this.colors.length;x++){
         this.textColors[x]=invertColor(this.colors[x]);
     }
-
-    console.log(this.colors);
-    console.log(this.textColors);
-
 
     // make circles yo
     this.makeCircles(7,5);
@@ -78,21 +82,28 @@ app.main = {
     this.dt = this.calculateDeltaTime();
 
     // 4) CIRCLES
-    this.updateCircles()
-    this.drawCircles(this.ctx);
+    this.updateCircles();
   },
 
-  Circle : function(x, y, radius, state, fraction, text, color) {
-    this.x = x;
-    this.y = y;
+  moveCircles : function(dt) {
+    for (let i = 0; i < this.circles.length; ++i) {
+      for (let k = 0; k < this.circles[i].length; ++k) {
+        const c = this.circles[i][k];
+        if (c.state == this.CIRCLE_STATE.EXPLODED) {
+          this.circles[i].splice(k,1);
+          for (let j = k; j < this.circles[i].length; j++) {
+            this.circles[i][j] = this.shiftCircle(this.circles[i][j]);
+          }
+          this.circles[i].push(this.makeCircle(c.x, 20));
+        }
+      }
+		}
+  },
 
-    this.radius = radius;
-    this.color = color;
-    this.state = state;
-    this.fraction = fraction;
-    this.text = text;
-
-    this.draw = draw.bind(this);
+  shiftCircle : function(c) {
+    let newCircle = c;
+    newCircle.y = c.y + (c.radius*2);
+    return newCircle;
   },
 
   drawCircles: function(ctx) {
@@ -103,34 +114,83 @@ app.main = {
   			c.draw(ctx);
       }
 		}
+    if (this.selectedCircle) this.selectedCircle.select(this.ctx);
 	},
 
   updateCircles: function() {
-    for (let i = 0; i < this.circles.length; ++i) {
-      for (let k = 0; k < this.circles[i].length; ++k) {
-        // check if exploded
-        if (this.circles[i][k].state == this.CIRCLE_STATE.EXPLODED) {
-          if (i + 1 == this.circles.length) {
-            // top row create circle
-          }
-          else {
-            // Shift all circles above down
-            // Check if EXPLODED and shift again if it is
-            // Keep account of numbers of times shifted and add that many circles
-            // go up to the next row            
-          }
-        }
-      }
-    }
+    this.moveCircles(this.dt);
+    this.drawCircles(this.ctx);
   },
 
-  makeCircles : function(numRows, numPerRow) {
-    const radius = 20;
-    const totalWidthNeeded = numPerRow * 2 * radius; // number of circles * diameter
-    const xOffset = this.canvas.width / 2 - (totalWidthNeeded / 2) + radius;
+  makeCircle: function(x, y) {
+    let c = {};
 
+    let move = function(oldCircle) {
+      this.y = oldCircle.y;
+      this.x = oldCircle.x;
+    };
+
+    let select = function(ctx) {
+      ctx.strokeStyle = this.backColor;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
+      ctx.stroke();
+    };
+
+    let draw = function(ctx) {
+      ctx.save();
+
+      // Create Red circle
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
+      ctx.fill();
+
+      // Draw the text on the circle
+      ctx.fillStyle = 'black';
+      ctx.textAlign = "center";
+      ctx.font="12px Arial"
+      ctx.fillText(this.text, parseInt(this.x), parseInt(this.y)+6); // Add half the fontsize to center the text
+
+      ctx.restore();
+    }
+
+    // Calculate x position
+    c.x = x;
+
+    // Calculate y position
+    c.y = y;
+
+    c.radius = 25;
+
+    c.state = this.CIRCLE_STATE.DEFAULT;
+
+    c.text = this.fractions[Math.floor((Math.random() * this.fractions.length))];
+
+    c.fraction = fractionToDecimal(c.text);
+
+    c.move = move;
+    c.draw = draw;
+    c.select = select;
+
+    // Random Color
+    c.color = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
+    c.backColor = 'rgb(82,255,51)';
+
+    return c;
+  },
+
+  makeCircles: function(numRows, numPerRow) {
+    const radius = 25;
+
+    const totalWidthNeeded = numPerRow * 2 * radius; // number of circles * diameter
     const totalHeightNeeded = numRows * 2 * radius; // number of rows * diameter
-    const yOffset = this.canvas.height / 2 - (totalHeightNeeded / 2) + radius;
+
+    this.canvas.width = totalWidthNeeded;
+    this.canvas.height = totalHeightNeeded;
+
+    const xOffset = radius;
+    const yOffset = radius;
 
     for (let i = 0; i < numPerRow; ++i) {
       let columns = [];
@@ -142,25 +202,60 @@ app.main = {
         //                            X X X X X X X
         // this is circles[0][0] ---> X X X X X X X
 
+        let c = {};
+
+        let move = function(oldCircle) {
+          this.y = oldCircle.y;
+          this.x = oldCircle.x;
+        };
+
+        let select = function(ctx) {
+          ctx.strokeStyle = this.backColor;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
+          ctx.stroke();
+        };
+
+        let draw = function(ctx) {
+          ctx.save();
+
+          // Create Red circle
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
+          ctx.fill();
+
+          // Draw the text on the circle
+          ctx.fillStyle = 'black';
+          ctx.textAlign = "center";
+          ctx.font="12px Arial"
+          ctx.fillText(this.text, parseInt(this.x), parseInt(this.y)+6); // Add half the fontsize to center the text
+
+          ctx.restore();
+        }
+
         // Calculate x position
-        let x = xOffset + (radius * 2 * i);
+        c.x = parseInt(xOffset + (radius * 2 * i));
 
         // Calculate y position
-        let y = yOffset + (radius * 2 * k);
+        c.y = parseInt(yOffset + (radius * 2 * k));
 
-        let targetX = x; // Used for animation
-        let targetY = y;
+        c.radius = radius;
 
-        let state = this.CIRCLE_STATE.DEFAULT;
+        c.state = this.CIRCLE_STATE.DEFAULT;
 
-        let text = this.fractions[Math.floor((Math.random() * this.fractions.length))];
+        c.text = this.fractions[Math.floor((Math.random() * this.fractions.length))];
 
-        let fraction = fractionToDecimal(text);
+        c.fraction = fractionToDecimal(c.text);
+
+        c.move = move;
+        c.draw = draw;
+        c.select = select;
 
         // Random Color
-        let c = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
-
-        columns.push(new this.Circle(x, y, radius, state, fraction, text, c));
+        c.color = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
+	      c.backColor = 'rgb(82,255,51)';
+        columns.push(c);
       }
 
       this.circles.push(columns);
@@ -186,7 +281,7 @@ app.main = {
           // We selected the second circle
           if (this.selectedCircle) {
             let c1 = this.selectedCircle;
-
+            if (c == c1) continue;
             if (c.fraction == c1.fraction) {
               // circles are the same delete for now
               c.state = this.CIRCLE_STATE.EXPLODED;
@@ -206,11 +301,37 @@ app.main = {
       }
     }
   },
+
+  explodeCircle: function(i, k) {
+    if (this.circles[i][k]) this.circles[i][k].state = this.CIRCLE_STATE.EXPLODED;
+
+    // one above and below
+    if (this.circles[i][k-1]) this.circles[i][k-1].state = this.CIRCLE_STATE.EXPLODED;
+    if (this.circles[i][k+1]) this.circles[i][k+1].state = this.CIRCLE_STATE.EXPLODED;
+
+    // left and right
+    if (this.circles[i-1]) this.circles[i-1][k].state = this.CIRCLE_STATE.EXPLODED;
+    if (this.circles[i+1]) this.circles[i+1][k].state = this.CIRCLE_STATE.EXPLODED;
+
+    // top left
+    if (this.circles[i-1] && this.circles[i-1][k+1]) this.circles[i-1][k+1].state = this.CIRCLE_STATE.EXPLODED;
+
+    // top right
+    if (this.circles[i+1] && this.circles[i+1][k+1]) this.circles[i+1][k+1].state = this.CIRCLE_STATE.EXPLODED;
+
+    // bottom left
+    if (this.circles[i-1] && this.circles[i-1][k-1]) this.circles[i-1][k-1].state = this.CIRCLE_STATE.EXPLODED;
+
+    // bottom right
+    if (this.circles[i+1] && this.circles[i+1][k-1]) this.circles[i+1][k-1].state = this.CIRCLE_STATE.EXPLODED;
+  },
+
   doMouseDown: function(e){
       const mouse = getMouse(this.canvas, e);
       // have to call through app.main because this = canvas
       this.checkCircleClicked(mouse);
    },
+
   addCircles: function(c1, c2) {
     const fraction1 = c1.text.split("/");
     const fraction2 = c2.text.split("/");
@@ -224,8 +345,16 @@ app.main = {
     c2.text = newFraction;
     c2.fraction = fractionToDecimal(newFraction);
 
-    if (c2.fraction >= 1) c2.state = this.CIRCLE_STATE.EXPLODED;
+    if (c2.fraction >= 1) {
+      for (let i = this.circles.length - 1; i >= 0; --i) {
+        for (let k = this.circles[i].length - 1; k >= 0; --k) {
+          if (c2 == this.circles[i][k]) this.explodeCircle(i,k);
+        }
+      }
+    }
 
-    c1.state = this.CIRCLE_STATE.EXPLODED
+    else {
+      c1.state = this.CIRCLE_STATE.EXPLODED;
+    }
   },
 }; // end app.main
