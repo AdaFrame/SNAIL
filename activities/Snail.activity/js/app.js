@@ -84,7 +84,7 @@ app.main = {
     // 4) CIRCLES
     this.updateCircles();
   },
-  
+
   moveCircles : function(dt) {
     for (let i = 0; i < this.circles.length; ++i) {
       for (let k = 0; k < this.circles[i].length; ++k) {
@@ -114,6 +114,7 @@ app.main = {
   			c.draw(ctx);
       }
 		}
+    if (this.selectedCircle) this.selectedCircle.select(this.ctx);
 	},
 
   updateCircles: function() {
@@ -129,6 +130,13 @@ app.main = {
       this.x = oldCircle.x;
     };
 
+    let select = function(ctx) {
+      ctx.strokeStyle = this.backColor;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
+      ctx.stroke();
+    };
+
     let draw = function(ctx) {
       ctx.save();
 
@@ -139,7 +147,7 @@ app.main = {
       ctx.fill();
 
       // Draw the text on the circle
-      ctx.fillStyle = "black";
+      ctx.fillStyle = 'black';
       ctx.textAlign = "center";
       ctx.font="12px Arial"
       ctx.fillText(this.text, parseInt(this.x), parseInt(this.y)+6); // Add half the fontsize to center the text
@@ -163,9 +171,11 @@ app.main = {
 
     c.move = move;
     c.draw = draw;
+    c.select = select;
 
     // Random Color
     c.color = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
+    c.backColor = 'rgb(82,255,51)';
 
     return c;
   },
@@ -199,6 +209,13 @@ app.main = {
           this.x = oldCircle.x;
         };
 
+        let select = function(ctx) {
+          ctx.strokeStyle = this.backColor;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
+          ctx.stroke();
+        };
+
         let draw = function(ctx) {
           ctx.save();
 
@@ -209,8 +226,7 @@ app.main = {
           ctx.fill();
 
           // Draw the text on the circle
-          // TODO There should be an inverse function so text is readable no matter the color
-          ctx.fillStyle = "black";
+          ctx.fillStyle = 'black';
           ctx.textAlign = "center";
           ctx.font="12px Arial"
           ctx.fillText(this.text, parseInt(this.x), parseInt(this.y)+6); // Add half the fontsize to center the text
@@ -234,11 +250,12 @@ app.main = {
 
         c.move = move;
         c.draw = draw;
+        c.select = select;
 
         // Random Color
-        let color = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]} )`;
-	      let backColor = `rgba(${this.colors[Math.floor((Math.random() * this.colors.lenth))]}, '0.5')`;
-        columns.push(new this.Circle(x, y, radius, state, fraction, text, backColor, color));
+        c.color = `rgb(${this.colors[Math.floor((Math.random() * this.colors.length))]})`;
+	      c.backColor = 'rgb(82,255,51)';
+        columns.push(c);
       }
 
       this.circles.push(columns);
@@ -264,7 +281,7 @@ app.main = {
           // We selected the second circle
           if (this.selectedCircle) {
             let c1 = this.selectedCircle;
-
+            if (c == c1) continue;
             if (c.fraction == c1.fraction) {
               // circles are the same delete for now
               c.state = this.CIRCLE_STATE.EXPLODED;
@@ -283,6 +300,30 @@ app.main = {
         }
       }
     }
+  },
+
+  explodeCircle: function(i, k) {
+    if (this.circles[i][k]) this.circles[i][k].state = this.CIRCLE_STATE.EXPLODED;
+
+    // one above and below
+    if (this.circles[i][k-1]) this.circles[i][k-1].state = this.CIRCLE_STATE.EXPLODED;
+    if (this.circles[i][k+1]) this.circles[i][k+1].state = this.CIRCLE_STATE.EXPLODED;
+
+    // left and right
+    if (this.circles[i-1]) this.circles[i-1][k].state = this.CIRCLE_STATE.EXPLODED;
+    if (this.circles[i+1]) this.circles[i+1][k].state = this.CIRCLE_STATE.EXPLODED;
+
+    // top left
+    if (this.circles[i-1] && this.circles[i-1][k+1]) this.circles[i-1][k+1].state = this.CIRCLE_STATE.EXPLODED;
+
+    // top right
+    if (this.circles[i+1] && this.circles[i+1][k+1]) this.circles[i+1][k+1].state = this.CIRCLE_STATE.EXPLODED;
+
+    // bottom left
+    if (this.circles[i-1] && this.circles[i-1][k-1]) this.circles[i-1][k-1].state = this.CIRCLE_STATE.EXPLODED;
+
+    // bottom right
+    if (this.circles[i+1] && this.circles[i+1][k-1]) this.circles[i+1][k-1].state = this.CIRCLE_STATE.EXPLODED;
   },
 
   doMouseDown: function(e){
@@ -304,8 +345,16 @@ app.main = {
     c2.text = newFraction;
     c2.fraction = fractionToDecimal(newFraction);
 
-    if (c2.fraction >= 1) c2.state = this.CIRCLE_STATE.EXPLODED;
+    if (c2.fraction >= 1) {
+      for (let i = this.circles.length - 1; i >= 0; --i) {
+        for (let k = this.circles[i].length - 1; k >= 0; --k) {
+          if (c2 == this.circles[i][k]) this.explodeCircle(i,k);
+        }
+      }
+    }
 
-    c1.state = this.CIRCLE_STATE.EXPLODED
+    else {
+      c1.state = this.CIRCLE_STATE.EXPLODED;
+    }
   },
 }; // end app.main
