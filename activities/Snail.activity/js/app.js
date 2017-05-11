@@ -46,7 +46,8 @@ app.main = {
   },
   SCORE:{
     ADD: 30,
-    EXPLODE: 300,
+    EQUAL: 300,
+    EXPLODE: 1000
   },
 
   init : function() {
@@ -233,7 +234,7 @@ app.main = {
                 this.gameState=this.GAME_STATE.END;
                 document.getElementById("gamestatus").innerHTML="GAME OVER";
               }
-              this.score+=this.SCORE.EXPLODE;
+              this.score+=this.SCORE.EQUAL;
               updateMoves();
               updateScore();
             }
