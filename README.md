@@ -16,3 +16,9 @@ Alex Wacker - JavaScript Programmer
 Alex Cook - Project Lead & JavaScript Programmer
 
 Maxwell Leisner - JavaScript Programmer and Documentation.
+
+## TODO
+ - Visual Improvements
+ - Unique Sugarizer icon
+ - Responsive resizing
+ - Additional modes
